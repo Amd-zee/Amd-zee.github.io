@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ahmad Zeeshan</title>
 
-  <!-- Font -->
+  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
@@ -23,10 +23,11 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background: black;
       text-align: center;
+      background: black;
     }
 
+    /* Animated background */
     canvas {
       position: fixed;
       top: 0;
@@ -34,29 +35,9 @@
       z-index: -1;
     }
 
-    /* Split Track Button */
-    .split-btn {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      padding: 10px 18px;
-      border: 2px solid cyan;
-      border-radius: 10px;
-      color: cyan;
-      text-decoration: none;
-      box-shadow: 0 0 10px cyan;
-      transition: 0.3s;
-    }
-
-    .split-btn:hover {
-      background: cyan;
-      color: black;
-      box-shadow: 0 0 20px cyan;
-    }
-
     .container {
       backdrop-filter: blur(10px);
-      background: rgba(0,0,0,0.5);
+      background: rgba(0, 0, 0, 0.5);
       padding: 30px;
       border-radius: 20px;
       box-shadow: 0 0 40px rgba(0,255,255,0.3);
@@ -73,8 +54,9 @@
     }
 
     h1 {
-      color: cyan;
+      font-size: 1.8rem;
       margin-bottom: 10px;
+      color: cyan;
     }
 
     p {
@@ -82,75 +64,97 @@
       margin: 5px 0;
     }
 
-    a.link {
+    a {
       color: #00ffff;
       text-decoration: none;
     }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.4rem;
+      }
+    }
+
+    .splitwise-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  padding: 10px 18px;
+  border: 2px solid cyan;
+  border-radius: 10px;
+  color: cyan;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: 0.3s;
+  box-shadow: 0 0 10px cyan;
+}
+
+.splitwise-btn:hover {
+  background: cyan;
+  color: black;
+  box-shadow: 0 0 20px cyan;
+}
   </style>
 </head>
 
 <body>
 
-<!-- Button -->
-<a href="/SplitTrack/" class="split-btn">Split Track</a>
-
-<!-- Background -->
 <canvas id="bg"></canvas>
 
-<!-- Content -->
+  <a href="https://ahmadzeeshan.tech/splittrack/login.html" class="splitwise-btn">Splitwise</a>
+
 <div class="container">
   <img src="my-photo.jpg" alt="Profile">
   <h1>Ahmad Zeeshan</h1>
   <p>Computer Science Student</p>
-  <p>Email: <a class="link" href="mailto:ahmadzee11224466@email.com">ahmadzee11224466@email.com</a></p>
-  <p>Institute: LUMS</p>
+  <p>Email: <a href="mailto:ahmadzee11224466@email.com">ahmadzee11224466@email.com</a></p>
+  <p>Institute: <a href="#">LUMS</a></p>
 </div>
 
-<!-- Background Animation -->
 <script>
-const canvas = document.getElementById("bg");
-const ctx = canvas.getContext("2d");
+  const canvas = document.getElementById("bg");
+  const ctx = canvas.getContext("2d");
 
-function resize() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-}
-resize();
 
-let particles = [];
+  let particles = [];
 
-for (let i = 0; i < 100; i++) {
-  particles.push({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    dx: Math.random() - 0.5,
-    dy: Math.random() - 0.5,
-    r: Math.random() * 2
+  for (let i = 0; i < 100; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 2,
+      dx: Math.random() - 0.5,
+      dy: Math.random() - 0.5
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    particles.forEach(p => {
+      p.x += p.dx;
+      p.y += p.dy;
+
+      if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = "cyan";
+      ctx.fill();
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
   });
-}
-
-function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  particles.forEach(p => {
-    p.x += p.dx;
-    p.y += p.dy;
-
-    if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
-    if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
-
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fillStyle = "cyan";
-    ctx.fill();
-  });
-
-  requestAnimationFrame(animate);
-}
-
-animate();
-
-window.addEventListener("resize", resize);
 </script>
 
 </body>
