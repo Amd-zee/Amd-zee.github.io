@@ -1,1 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SplitTrack – Login</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
 
+<body class="login-page" style="background:black;">
+
+<!-- 🔥 Background -->
+<canvas id="bg"></canvas>
+
+<div class="login-wrapper">
+  <div class="login-box">
+    <div class="login-glow"></div>
+
+    <h1 class="login-title">SplitTrack</h1>
+    <p class="login-subtitle">Track. Balance. Settle.</p>
+
+    <div class="input-group">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="Enter username">
+    </div>
+
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Enter password">
+    </div>
+
+    <button class="login-btn" onclick="doLogin()">Login</button>
+
+    <p class="login-error" id="login-error"></p>
+  </div>
+</div>
+
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+
+<!-- 🔥 BLACK 3D BACKGROUND -->
+<script>
+const canvas = document.getElementById("bg");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+
+let particles = [];
+
+for (let i = 0; i < 120; i++) {
+  particles.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    z: Math.random() * 200,
+    dx: (Math.random() - 0.4),
+    dy: (Math.random() - 0.4)
+  });
+}
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  particles.forEach(p => {
+    p.x += p.dx;
+    p.y += p.dy;
+
+    if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+    if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+
+    let size = (p.z / 200) * 2;
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0,255,255,0.7)";
+    ctx.fill();
+  });
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+window.addEventListener("resize", resize);
+</script>
+
+</body>
+</html>
