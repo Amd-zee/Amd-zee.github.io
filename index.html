@@ -74,12 +74,34 @@
         font-size: 1.4rem;
       }
     }
+
+    .splitwise-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  padding: 10px 18px;
+  border: 2px solid cyan;
+  border-radius: 10px;
+  color: cyan;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: 0.3s;
+  box-shadow: 0 0 10px cyan;
+}
+
+.splitwise-btn:hover {
+  background: cyan;
+  color: black;
+  box-shadow: 0 0 20px cyan;
+}
   </style>
 </head>
 
 <body>
 
 <canvas id="bg"></canvas>
+
+  <a href="#" class="splitwise-btn">Splitwise</a>
 
 <div class="container">
   <img src="my-photo.jpg" alt="Profile">
