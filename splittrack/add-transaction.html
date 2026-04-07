@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Transaction</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page">
+  <div class="topbar">
+    <button class="logout-btn" onclick="history.back()">← Back</button>
+    <h2>New Transaction</h2>
+    <span class="topbar-user" id="user-label"></span>
+  </div>
+
+  <div class="content">
+
+    <!-- STEP 1: Who paid? -->
+    <div id="step1">
+      <span class="step-label">Step 1 of 3 — Who paid?</span>
+      <div class="glass-card">
+        <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:20px">Select the person who made the payment</p>
+        <button class="btn" onclick="selectPayer('Ahmad')">
+          <span style="font-size:1.2rem">🧑</span>  Ahmad
+        </button>
+        <button class="btn" onclick="selectPayer('Arham')">
+          <span style="font-size:1.2rem">🧑</span>  Arham
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Date -->
+    <div id="step2" style="display:none">
+      <span class="step-label">Step 2 of 3 — Select date</span>
+      <div class="glass-card">
+        <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:20px">Which date was this transaction?</p>
+        <div id="date-buttons"></div>
+      </div>
+    </div>
+
+    <!-- STEP 3: Amount + Description -->
+    <div id="step3" style="display:none">
+      <span class="step-label">Step 3 of 3 — Details</span>
+      <div class="glass-card">
+        <div style="margin-bottom:6px;color:var(--text-muted);font-size:0.78rem;text-transform:uppercase;letter-spacing:1px">Amount (PKR)</div>
+        <input type="number" id="amount" class="form-input" placeholder="0" min="0" step="any">
+
+        <div style="margin-bottom:6px;color:var(--text-muted);font-size:0.78rem;text-transform:uppercase;letter-spacing:1px">Description</div>
+        <input type="text" id="description" class="form-input" placeholder="e.g. Dinner, Petrol, Groceries">
+
+        <!-- Summary pill -->
+        <div id="summary-pill" style="background:rgba(127,90,240,0.12);border:1px solid rgba(127,90,240,0.25);border-radius:12px;padding:12px 16px;margin-bottom:20px;font-size:0.85rem;color:var(--text-muted)"></div>
+
+        <button class="btn btn-primary" onclick="submitTransaction()">Submit Transaction</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script>
+    const user = getUser();
+    if (!user) window.location.href = 'index.html';
+    document.getElementById('user-label').textContent = user.username;
+
+    let selectedPayer = '';
+    let selectedDate  = '';
+
+    // ── Step 1: payer ──────────────────────────────
+    function selectPayer(name) {
+      selectedPayer = name;
+      document.getElementById('step1').style.display = 'none';
+      buildDateButtons();
+      document.getElementById('step2').style.display = 'block';
+    }
+
+    // ── Step 2: date ───────────────────────────────
+    function buildDateButtons() {
+      const container = document.getElementById('date-buttons');
+      container.innerHTML = '';
+      const today = new Date();
+
+      for (let i = 0; i < 4; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - i);
+
+        const yyyy = d.getFullYear();
+        const mm   = String(d.getMonth() + 1).padStart(2, '0');
+        const dd   = String(d.getDate()).padStart(2, '0');
+        const iso  = `${yyyy}-${mm}-${dd}`;
+
+        const label = i === 0 ? 'Today' :
+                      i === 1 ? 'Yesterday' :
+                      d.toLocaleDateString('en-PK', { weekday: 'long', day: 'numeric', month: 'short' });
+
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.innerHTML = `<span style="font-weight:600">${label}</span><span style="float:right;color:var(--text-muted);font-size:0.8rem">${dd}/${mm}/${yyyy}</span>`;
+        btn.onclick = () => selectDate(iso);
+        container.appendChild(btn);
+      }
+    }
+
+    function selectDate(iso) {
+      selectedDate = iso;
+      document.getElementById('step2').style.display = 'none';
+
+      // Build summary pill
+      const [y, m, d] = iso.split('-');
+      const readable = new Date(iso).toLocaleDateString('en-PK', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+      document.getElementById('summary-pill').innerHTML =
+        `💸 <strong>${selectedPayer}</strong> paid &nbsp;|&nbsp; 📅 ${readable}`;
+
+      document.getElementById('step3').style.display = 'block';
+      document.getElementById('amount').focus();
+    }
+
+    // ── Step 3: submit ─────────────────────────────
+    async function submitTransaction() {
+      const amount      = parseFloat(document.getElementById('amount').value);
+      const description = document.getElementById('description').value.trim();
+
+      if (!amount && amount !== 0) { showToast('⚠️ Enter a valid amount'); return; }
+      if (amount < 0)              { showToast('⚠️ Amount cannot be negative'); return; }
+      if (!description)            { showToast('⚠️ Description is required'); return; }
+
+      try {
+        await apiFetch('/transactions/add', {
+          method: 'POST',
+          body: { date: selectedDate, amount, description, paid_by: selectedPayer },
+        });
+        showToast('✅ Transaction recorded successfully');
+        setTimeout(() => window.location.href = 'dashboard.html', 1500);
+      } catch (err) {
+        showToast('❌ ' + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

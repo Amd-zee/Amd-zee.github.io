@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SplitTrack</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page">
+  <div class="topbar">
+    <h2>SplitTrack</h2>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="topbar-user" id="user-label"></span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <button class="menu-btn" onclick="go('add-transaction.html')">
+      <span class="icon">💸</span>
+      <div>
+        <div>Report a transaction</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-top:2px">Add a new expense</div>
+      </div>
+    </button>
+
+    <button class="menu-btn" onclick="go('view-balance.html')">
+      <span class="icon">📊</span>
+      <div>
+        <div>View current situation</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-top:2px">See who owes whom</div>
+      </div>
+    </button>
+
+    <button class="menu-btn" onclick="go('statement.html')">
+      <span class="icon">📋</span>
+      <div>
+        <div>Check statement</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-top:2px">Monthly transaction history</div>
+      </div>
+    </button>
+
+    <!-- Admin only -->
+    <button class="menu-btn" id="admin-btn" style="display:none;border-color:rgba(255,137,6,0.4)" onclick="go('edit-transaction.html')">
+      <span class="icon">✏️</span>
+      <div>
+        <div>Edit a transaction</div>
+        <div style="font-size:0.78rem;color:rgba(255,137,6,0.5);margin-top:2px">Admin only</div>
+      </div>
+    </button>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script>
+    const user = getUser();
+    if (!user) window.location.href = 'index.html';
+    document.getElementById('user-label').textContent = user.username;
+    if (user.role === 'admin') {
+      document.getElementById('admin-btn').style.display = 'flex';
+    }
+    function go(page) { window.location.href = page; }
+  </script>
+</body>
+</html>

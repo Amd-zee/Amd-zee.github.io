@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Current Situation</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page">
+  <div class="topbar">
+    <button class="logout-btn" onclick="history.back()">← Back</button>
+    <h2>Current Situation</h2>
+    <span class="topbar-user" id="user-label"></span>
+  </div>
+
+  <div class="content">
+
+    <div class="glass-card" style="margin-bottom:20px;text-align:center">
+      <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:6px">Overall balance</div>
+      <div id="summary-line" style="font-size:1rem;color:var(--text-muted)">Loading…</div>
+    </div>
+
+    <div class="balance-grid">
+      <div class="balance-card" id="card-ahmad">
+        <div class="balance-name">Ahmad</div>
+        <div class="balance-amount" id="bal-ahmad">—</div>
+        <div style="font-size:0.7rem;margin-top:8px;color:rgba(255,255,255,0.4)" id="label-ahmad"></div>
+      </div>
+      <div class="balance-card" id="card-arham">
+        <div class="balance-name">Arham</div>
+        <div class="balance-amount" id="bal-arham">—</div>
+        <div style="font-size:0.7rem;margin-top:8px;color:rgba(255,255,255,0.4)" id="label-arham"></div>
+      </div>
+    </div>
+
+    <div class="glass-card" style="margin-top:20px" id="verdict-card">
+      <div id="verdict" style="text-align:center;font-size:1rem;line-height:1.6"></div>
+    </div>
+
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script>
+    const user = getUser();
+    if (!user) window.location.href = 'index.html';
+    document.getElementById('user-label').textContent = user.username;
+
+    function fmt(n) {
+      const abs = Math.abs(n).toLocaleString('en-PK', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      return (n >= 0 ? '+' : '-') + ' PKR ' + abs;
+    }
+
+    async function loadBalance() {
+      try {
+        const data = await apiFetch('/transactions/balance');
+        const a = parseFloat(data.balance_ahmad);
+        const b = parseFloat(data.balance_arham);
+
+        // Ahmad card
+        document.getElementById('bal-ahmad').textContent = fmt(a);
+        const cardA = document.getElementById('card-ahmad');
+        cardA.classList.add(a >= 0 ? 'positive' : 'negative');
+        document.getElementById('label-ahmad').textContent = a >= 0 ? 'paid more' : 'owes back';
+
+        // Arham card
+        document.getElementById('bal-arham').textContent = fmt(b);
+        const cardB = document.getElementById('card-arham');
+        cardB.classList.add(b >= 0 ? 'positive' : 'negative');
+        document.getElementById('label-arham').textContent = b >= 0 ? 'paid more' : 'owes back';
+
+        // Summary line
+        const total = Math.max(Math.abs(a), Math.abs(b));
+        document.getElementById('summary-line').textContent =
+          total === 0 ? 'All settled up 🎉' : `PKR ${total.toLocaleString()} difference`;
+
+        // Verdict
+        let verdict = '';
+        if (Math.abs(a) < 1) {
+          verdict = '🎉 All settled up! No one owes anything.';
+        } else if (a > 0) {
+          verdict = `Arham owes Ahmad <strong>PKR ${Math.abs(b).toLocaleString()}</strong>`;
+        } else {
+          verdict = `Ahmad owes Arham <strong>PKR ${Math.abs(a).toLocaleString()}</strong>`;
+        }
+        document.getElementById('verdict').innerHTML = verdict;
+
+      } catch (err) {
+        document.getElementById('summary-line').textContent = 'Failed to load';
+      }
+    }
+
+    loadBalance();
+  </script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statement</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page">
+  <div class="topbar">
+    <button class="logout-btn" onclick="history.back()">← Back</button>
+    <h2>Statement</h2>
+    <span class="topbar-user" id="user-label"></span>
+  </div>
+
+  <div class="content">
+
+    <!-- Month selector -->
+    <div id="month-select">
+      <span class="step-label">Select month</span>
+      <button class="btn" id="btn-current" onclick="loadMonth(0)"></button>
+      <button class="btn" id="btn-prev"    onclick="loadMonth(1)"></button>
+    </div>
+
+    <!-- Statement view -->
+    <div id="statement-view" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <button class="logout-btn" onclick="backToSelect()">← Months</button>
+        <h3 id="stmt-title" style="font-size:1rem;font-weight:600"></h3>
+        <span></span>
+      </div>
+
+      <!-- Opening balance -->
+      <div class="glass-card" style="margin-bottom:12px;padding:14px 16px">
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px">Opening balance</div>
+        <div style="display:flex;justify-content:space-between;font-size:0.88rem">
+          <span>Ahmad: <strong id="open-ahmad" style="color:#c4b5fd"></strong></span>
+          <span>Arham: <strong id="open-arham" style="color:#ffc068"></strong></span>
+        </div>
+      </div>
+
+      <!-- Transactions table -->
+      <div class="glass-card" style="padding:0;overflow:hidden">
+        <div style="overflow-x:auto">
+          <table class="stmt-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Desc</th>
+                <th>Amt</th>
+                <th>Paid by</th>
+                <th>Bal A</th>
+                <th>Bal Ar</th>
+                <th>By</th>
+              </tr>
+            </thead>
+            <tbody id="stmt-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Closing balance -->
+      <div class="glass-card" style="margin-top:12px;padding:14px 16px">
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px">Closing balance</div>
+        <div style="display:flex;justify-content:space-between;font-size:0.88rem">
+          <span>Ahmad: <strong id="close-ahmad" style="color:#c4b5fd"></strong></span>
+          <span>Arham: <strong id="close-arham" style="color:#ffc068"></strong></span>
+        </div>
+      </div>
+
+      <div id="no-data" style="display:none;text-align:center;color:var(--text-muted);padding:32px 0">
+        No transactions this month
+      </div>
+    </div>
+
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script>
+    const user = getUser();
+    if (!user) window.location.href = 'index.html';
+    document.getElementById('user-label').textContent = user.username;
+
+    // Build month buttons
+    const now = new Date();
+    function monthLabel(offset) {
+      const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+      return d.toLocaleDateString('en-PK', { month: 'long', year: 'numeric' });
+    }
+    function monthKey(offset) {
+      const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    document.getElementById('btn-current').textContent = monthLabel(0) + ' (Current)';
+    document.getElementById('btn-prev').textContent    = monthLabel(1) + ' (Previous)';
+
+    function fmtAmt(n) {
+      if (n === null || n === undefined) return '—';
+      const abs = Math.abs(parseFloat(n)).toLocaleString('en-PK', { minimumFractionDigits:0, maximumFractionDigits:0 });
+      return (parseFloat(n) >= 0 ? '+' : '-') + abs;
+    }
+
+    function fmtDate(iso) {
+      return new Date(iso).toLocaleDateString('en-PK', { day:'2-digit', month:'short' });
+    }
+
+    async function loadMonth(offset) {
+      const key = monthKey(offset);
+      document.getElementById('month-select').style.display    = 'none';
+      document.getElementById('statement-view').style.display  = 'block';
+      document.getElementById('stmt-title').textContent        = monthLabel(offset);
+      document.getElementById('stmt-body').innerHTML           = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">Loading…</td></tr>';
+
+      try {
+        const data = await apiFetch(`/transactions/month/${key}`);
+        const mb   = data.monthly_balance;
+        const txs  = data.transactions;
+
+        // Opening balance
+        document.getElementById('open-ahmad').textContent = fmtAmt(mb ? mb.opening_ahmad : 0);
+        document.getElementById('open-arham').textContent = fmtAmt(mb ? mb.opening_arham : 0);
+
+        // Closing balance
+        document.getElementById('close-ahmad').textContent = fmtAmt(mb ? mb.closing_ahmad : 0);
+        document.getElementById('close-arham').textContent = fmtAmt(mb ? mb.closing_arham : 0);
+
+        const tbody = document.getElementById('stmt-body');
+
+        if (!txs || txs.length === 0) {
+          tbody.innerHTML = '';
+          document.getElementById('no-data').style.display = 'block';
+          return;
+        }
+
+        document.getElementById('no-data').style.display = 'none';
+        tbody.innerHTML = txs.map(tx => `
+          <tr>
+            <td style="white-space:nowrap">${fmtDate(tx.date)}</td>
+            <td>${tx.description}</td>
+            <td style="white-space:nowrap;font-weight:600">${parseFloat(tx.amount).toLocaleString()}</td>
+            <td><span class="tag ${tx.paid_by.toLowerCase()}">${tx.paid_by}</span></td>
+            <td style="white-space:nowrap;color:${parseFloat(tx.balance_ahmad)>=0?'#c4b5fd':'#ff6b6b'}">${fmtAmt(tx.balance_ahmad)}</td>
+            <td style="white-space:nowrap;color:${parseFloat(tx.balance_arham)>=0?'#ffc068':'#ff6b6b'}">${fmtAmt(tx.balance_arham)}</td>
+            <td style="color:var(--text-muted);font-size:0.75rem">${tx.reported_by}</td>
+          </tr>
+        `).join('');
+
+      } catch (err) {
+        document.getElementById('stmt-body').innerHTML =
+          `<tr><td colspan="7" style="text-align:center;color:var(--danger);padding:20px">${err.message}</td></tr>`;
+      }
+    }
+
+    function backToSelect() {
+      document.getElementById('statement-view').style.display = 'none';
+      document.getElementById('month-select').style.display   = 'block';
+    }
+  </script>
+</body>
+</html>
