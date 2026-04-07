@@ -1,33 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ahmad Zeeshan</title>
-
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Orbitron', sans-serif;
-    }
-
     body {
-      height: 100vh;
-      overflow: hidden;
+      margin: 0;
+      background: black;
       color: white;
+      font-family: Arial;
       display: flex;
       justify-content: center;
       align-items: center;
-      text-align: center;
-      background: black;
+      height: 100vh;
     }
 
-    /* Animated background */
     canvas {
       position: fixed;
       top: 0;
@@ -35,65 +23,18 @@
       z-index: -1;
     }
 
-    .container {
-      backdrop-filter: blur(10px);
-      background: rgba(0, 0, 0, 0.5);
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 0 40px rgba(0,255,255,0.3);
-      width: 90%;
-      max-width: 400px;
-    }
-
-    img {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      border: 3px solid cyan;
-      margin-bottom: 15px;
-    }
-
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 10px;
-      color: cyan;
-    }
-
-    p {
-      font-size: 0.9rem;
-      margin: 5px 0;
+    .box {
+      text-align: center;
     }
 
     a {
-      color: #00ffff;
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      border: 2px solid cyan;
+      color: cyan;
       text-decoration: none;
     }
-
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 1.4rem;
-      }
-    }
-
-    .splitwise-btn {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  padding: 10px 18px;
-  border: 2px solid cyan;
-  border-radius: 10px;
-  color: cyan;
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: 0.3s;
-  box-shadow: 0 0 10px cyan;
-}
-
-.splitwise-btn:hover {
-  background: cyan;
-  color: black;
-  box-shadow: 0 0 20px cyan;
-}
   </style>
 </head>
 
@@ -101,60 +42,36 @@
 
 <canvas id="bg"></canvas>
 
-  <a href="https://ahmadzeeshan.tech/splittrack/login.html" class="splitwise-btn">Splitwise</a>
-
-<div class="container">
-  <img src="my-photo.jpg" alt="Profile">
+<div class="box">
   <h1>Ahmad Zeeshan</h1>
-  <p>Computer Science Student</p>
-  <p>Email: <a href="mailto:ahmadzee11224466@email.com">ahmadzee11224466@email.com</a></p>
-  <p>Institute: <a href="#">LUMS</a></p>
+  <a href="/SplitTrack/">Open Split Track</a>
 </div>
 
 <script>
-  const canvas = document.getElementById("bg");
-  const ctx = canvas.getContext("2d");
+const c = document.getElementById("bg");
+const x = c.getContext("2d");
+c.width = innerWidth;
+c.height = innerHeight;
 
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+let p = Array.from({length:100},()=>({
+  x:Math.random()*c.width,
+  y:Math.random()*c.height,
+  dx:Math.random()-0.5,
+  dy:Math.random()-0.5
+}));
 
-  let particles = [];
-
-  for (let i = 0; i < 100; i++) {
-    particles.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      r: Math.random() * 2,
-      dx: Math.random() - 0.5,
-      dy: Math.random() - 0.5
-    });
-  }
-
-  function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    particles.forEach(p => {
-      p.x += p.dx;
-      p.y += p.dy;
-
-      if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
-      if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
-
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = "cyan";
-      ctx.fill();
-    });
-
-    requestAnimationFrame(animate);
-  }
-
-  animate();
-
-  window.addEventListener("resize", () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+function a(){
+  x.clearRect(0,0,c.width,c.height);
+  p.forEach(o=>{
+    o.x+=o.dx; o.y+=o.dy;
+    x.beginPath();
+    x.arc(o.x,o.y,2,0,6.28);
+    x.fillStyle="cyan";
+    x.fill();
   });
+  requestAnimationFrame(a);
+}
+a();
 </script>
 
 </body>
